@@ -6,10 +6,17 @@ class DB:
         self.client = pymongo.MongoClient(
             f"mongodb://{user}:{password}@{url}:{port}/")
         self.db = self.client[db_name]
-        self.collection = self.db[collection_name]
+        self.collection_name = collection_name  # Store collection name as an instance attribute
+
+    @property
+    def collection(self):
+        return self.db[self.collection_name]
 
     def insert(self, data):
         self.collection.insert_one(data)
+
+    def multi_insert(self, data):
+        self.collection.insert_many(data)
 
     def find(self, query):
         return self.collection.find(query)
