@@ -91,6 +91,14 @@ questions = [
     },
     {
         'type': 'input',
+        'name': 'mongo_collection',
+        'message': 'Enter your MongoDB Collection Name',
+        'default': 'spaceinvader',
+        'validate': lambda answer: 'Pls enter a collection name.'
+        if len(answer) == 0 else True
+    },
+    {
+        'type': 'input',
         'name': 'mongo_user',
         'message': 'Enter your MongoDB Username',
         'default': 'root',
@@ -109,7 +117,7 @@ questions = [
 try:
     answers = prompt(questions, style=style)
     with open("config.json", "w") as f:
-        f.write(str(answers))
+        f.write(str(answers).replace("'", '"'))
 except NoConsoleScreenBufferError:
     print("Pls run in cmd or powershell")
     exit()
