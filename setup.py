@@ -49,6 +49,9 @@ questions = [
                 'name': 'MPI (recommended)',
                 'checked': True
             },
+            {
+                'name': 'Celery',
+            }
         ],
         'validate': lambda answer: 'Pls select at least one option.'
         if len(answer) == 0 else True
@@ -69,6 +72,13 @@ questions = [
         'default': '8080',
         'validate': lambda answer: 'Pls enter a valid port number.'
         if len(answer) == 0 and answer.isnumeric() else True
+    },
+    {
+        'type': 'input',
+        'name': 'rabbitmq_url',
+        'message': 'Enter your RabbitMQ URL (celery)',
+        'when': lambda answers: 'Celery' in answers['features'],
+        'default': 'amqp://guest:guest@localhost:5672/',
     },
     {
         'type': 'input',
