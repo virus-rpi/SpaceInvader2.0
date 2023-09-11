@@ -1,11 +1,15 @@
 from __future__ import print_function, unicode_literals
-
+import os
 from PyInquirer import style_from_dict, Token, prompt, Separator
 from prompt_toolkit.terminal.win32_output import NoConsoleScreenBufferError
 from pyfiglet import Figlet
 
 f = Figlet(font='slant')
 print(f.renderText('SpaceInvader 2.0'))
+
+print("Welcome to the SpaceInvader 2.0 setup wizard.")
+print("Installing dependencies...")
+os.system("pip install -r requirements.txt")
 
 style = style_from_dict({
     Token.Separator: '#cc5454',
@@ -119,5 +123,5 @@ try:
     with open("config.json", "w") as f:
         f.write(str(answers).replace("'", '"'))
 except NoConsoleScreenBufferError:
-    print("Pls run in cmd or powershell")
+    print("Pls run in cmd or powershell to configure.")
     exit()
