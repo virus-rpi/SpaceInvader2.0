@@ -9,6 +9,16 @@ Run setup.py to install the dependencies and configure SpaceInvader 2.0
 ## Usage
 Not usable yet
 
+## Planned Features
+- [ ] Features from SpaceInvader 1.0
+- [ ] Celery for async tasks to scan from multiple devices at once
+- [ ] Webinterface to manage the server list and look at statistics
+- [ ] Discord Bot to manage the server list and look at statistics
+- [ ] Docker support
+- [ ] MognoDB support
+- [ ] Modular design to add new features easily
+- [ ] More to come
+
 
 
 PLEASE NEVER USE MY CODE TO GRIEF SERVERS.
