@@ -64,5 +64,9 @@ class TestDB(unittest.TestCase):
         mock_collection.return_value.insert_many.assert_called_once_with(data)
 
 
+class TestServerReconnaissance(unittest.TestCase):
+    pass  # Will be implemented later, when the module is more complete
+
+
 if __name__ == '__main__':
     unittest.main()
