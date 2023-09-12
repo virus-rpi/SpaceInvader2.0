@@ -1,4 +1,5 @@
 from typing import NamedTuple
+from mcstatus import JavaServer
 
 
 class ServerData(NamedTuple):
@@ -28,7 +29,8 @@ class ServerReconnaissance:
         self.db = db
         self.config = config
 
-    def investigate(self, server_id: int = None, server_ip: str = None, server_port: int = None, update_db: bool = False,
+    def investigate(self, server_id: int = None, server_ip: str = None, server_port: int = None,
+                    update_db: bool = False,
                     data: ServerData = None):
         if data is None:
             data = standard_data
@@ -77,42 +79,111 @@ class ServerReconnaissance:
                 results.append(self._investigate_by_ip(server["ip"], server["port"], update_db, data))
         return results
 
-    def _investigate_by_ip(self, server_ip: str, server_port: int = 25565, update_db: bool = False, data: ServerData = None):
+    def _investigate_by_ip(self, server_ip: str, server_port: int = 25565, update_db: bool = False,
+                           data: ServerData = None):
         if data is None:
             data = standard_data
         if update_db and self.db is None:
             raise ValueError("Database must be provided if update_db is True.")
 
-        server_data = {"ip": server_ip, "port": server_port, "online": True if True else False, "online_players": None,
-                       "max_players": None, "version": None, "motd": None, "plugins": None, "server_type": None,
-                       "whitelist": None, "ping": None, "last_scanned": None, "last_online": None, "geo": None,
-                       "rcon": None, "shodan": None}
+        server = Server(server_ip, server_port)
 
-        if data.online_players:
-            server_data["online_players"] = None
-        if data.max_players:
-            server_data["max_players"] = None
-        if data.version:
-            server_data["version"] = None
-        if data.motd:
-            server_data["motd"] = None
-        if data.plugins:
-            server_data["plugins"] = None
-        if data.server_type:
-            server_data["server_type"] = None
-        if data.whitelist:
-            server_data["whitelist"] = None
-        if data.ping:
-            server_data["ping"] = None
-        if data.last_scanned:
-            server_data["last_scanned"] = None
-        if data.last_online:
-            server_data["last_online"] = None
-        if data.geo:
-            server_data["geo"] = None
-        if data.rcon:
-            server_data["rcon"] = None
-        if data.shodan:
-            server_data["shodan"] = None
+        server.update(data)
+
+        server_data = dict(server)
+
+        if update_db:
+            pass  # update db
 
         return server_data
+
+
+class Server:
+    def __init__(self, ip: str, port: int = 25565):
+        self.ip = ip
+        self.port = port
+        self.online = None
+        self.online_players = None
+        self.max_players = None
+        self.version = None
+        self.motd = None
+        self.plugins = None
+        self.server_type = None
+        self.whitelist = None
+        self.ping = None
+        self.last_scanned = None
+        self.last_online = None
+        self.geo = None
+        self.rcon = None
+        self.shodan = None
+        self.query_enabled = None
+
+    def __str__(self) -> str:
+        return f"Server({self.ip}:{self.port})"
+
+    def __repr__(self) -> str:
+        fields = [
+            "online", "online_players", "max_players", "version", "motd", "plugins",
+            "server_type", "whitelist", "ping", "last_scanned", "last_online", "geo", "rcon", "shodan"
+        ]
+        attributes = ', '.join([f"{field}={getattr(self, field)}" for field in fields if getattr(self, field) is not None])
+        return f"Server({self.ip}:{self.port}): {attributes}"
+
+    def __eq__(self, other) -> bool:
+        return self.ip == other.ip and self.port == other.port
+
+    def __ne__(self, other) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash((self.ip, self.port))
+
+    def __bool__(self) -> bool:
+        return self.online
+
+    def __int__(self) -> int:
+        return self.ping
+
+    def __iter__(self) -> iter:
+        fields = [
+            "ip", "port", "online", "online_players", "max_players", "version",
+            "motd", "plugins", "server_type", "whitelist", "ping",
+            "last_scanned", "last_online", "geo", "rcon", "shodan"
+        ]
+        for field in fields:
+            value = getattr(self, field)
+            if value is not None:
+                yield field, value
+
+    def _get_data(self, data: ServerData):  # TODO: test this function and fix if necessary
+        offline_errors = (ConnectionError or ConnectionResetError or ConnectionRefusedError or TimeoutError)
+
+        server = JavaServer.lookup(f"{self.ip}:{self.port}")
+        server_data = None
+
+        try:
+            if (data.plugins or data.server_type) and self.query_enabled is not False:
+                server_data = server.query()
+                self.query_enabled = True
+            else:
+                raise offline_errors
+        except offline_errors:
+            try:
+                server_data = server.status()
+                self.query_enabled = False
+            except offline_errors:
+                pass
+
+        return server_data
+
+    def update(self, data: ServerData) -> None:  # TODO: add the rest of the data and fix errors with different data structures between status and query
+        server_data = self._get_data(data)
+
+        self.online = True if server_data is not None else False
+
+        if self.online:
+            self.online_players = server_data.players.online if data.online_players else None
+            self.max_players = server_data.players.max if data.max_players else None
+            self.version = server_data.version.name if data.version else None
+            self.motd = server_data.description if data.motd else None
+            self.ping = round(server_data.latency, 2) if data.ping else None
