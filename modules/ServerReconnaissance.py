@@ -28,7 +28,8 @@ class ServerReconnaissance:
         self.db = db
         self.config = config
 
-    def investigate(self, server_id=None, server_ip=None, server_port=None, update_db=False, data: ServerData = None):
+    def investigate(self, server_id: int = None, server_ip: str = None, server_port: int = None, update_db: bool = False,
+                    data: ServerData = None):
         if data is None:
             data = standard_data
         if server_id is not None and server_ip is not None:
@@ -51,7 +52,7 @@ class ServerReconnaissance:
                 raise ValueError("Port must be provided if ip is provided.")
         return None
 
-    def _investigate_by_id(self, server_id, update_db=False, data: ServerData = None):
+    def _investigate_by_id(self, server_id: int, update_db: bool = False, data: ServerData = None):
         if data is None:
             data = standard_data
         if update_db and self.db is None:
@@ -60,7 +61,7 @@ class ServerReconnaissance:
         port = self.db.find({"_id": server_id})[0]["port"]
         return self._investigate_by_ip(ip, port, update_db, data)
 
-    def investigate_all(self, update_db=True, data: ServerData = None, celery=False):
+    def investigate_all(self, update_db: bool = True, data: ServerData = None, celery: bool = False):
         if celery:
             if 'Celery' not in self.config['features']:
                 raise ValueError("Celery must be enabled in config to use this function.")
@@ -76,7 +77,7 @@ class ServerReconnaissance:
                 results.append(self._investigate_by_ip(server["ip"], server["port"], update_db, data))
         return results
 
-    def _investigate_by_ip(self, server_ip, server_port=25565, update_db=False, data: ServerData = None):
+    def _investigate_by_ip(self, server_ip: str, server_port: int = 25565, update_db: bool = False, data: ServerData = None):
         if data is None:
             data = standard_data
         if update_db and self.db is None:
