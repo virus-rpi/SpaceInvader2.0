@@ -5,6 +5,9 @@ from modules.db import DB
 
 
 class TestDB(unittest.TestCase):
+    mock_db = None
+    mock_client = None
+
     @classmethod
     def setUpClass(cls):
         cls.mock_client = pymongo.MongoClient("mongodb://localhost:27017/")
