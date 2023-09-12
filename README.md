@@ -15,7 +15,7 @@ Not usable yet
 - [ ] Webinterface to manage the server list and look at statistics
 - [ ] Discord Bot to manage the server list and look at statistics
 - [ ] Docker support
-- [ ] MognoDB support
+- [ ] MongoDB support
 - [ ] Modular design to add new features easily
 - [ ] More to come
 
