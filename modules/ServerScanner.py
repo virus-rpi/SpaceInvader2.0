@@ -1,6 +1,3 @@
-import logging
-
-
 class ServerScanner:
     def __init__(self, config, db):
         self.config = config
@@ -12,7 +9,7 @@ class ServerScanner:
         elif self.config["scanner"] == "Masscan":
             self.masscan_scan()
         else:
-            logging.error("Invalid scanner selected")
+            raise ValueError("Invalid scanner selected.")
 
     def qubo_scan(self):
         pass
