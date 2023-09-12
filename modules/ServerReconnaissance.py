@@ -39,24 +39,26 @@ class ServerReconnaissance:
             raise ValueError("Port should not be provided if id is provided.")
         if update_db and self.db is None:
             raise ValueError("Database must be provided if update_db is True.")
+        if server_id is not None and self.db is None:
+            raise ValueError("Database must be provided if id is provided.")
 
         if server_id is not None:
-            return self.investigate_by_id(server_id, update_db, data)
+            return self._investigate_by_id(server_id, update_db, data)
         elif server_ip is not None:
             if server_port is not None:
-                return self.investigate_by_ip(server_ip, server_port, update_db, data)
+                return self._investigate_by_ip(server_ip, server_port, update_db, data)
             else:
                 raise ValueError("Port must be provided if ip is provided.")
         return None
 
-    def investigate_by_id(self, server_id, update_db=False, data: ServerData = None):
+    def _investigate_by_id(self, server_id, update_db=False, data: ServerData = None):
         if data is None:
             data = standard_data
         if update_db and self.db is None:
             raise ValueError("Database must be provided if update_db is True.")
         ip = self.db.find({"_id": server_id})[0]["ip"]
         port = self.db.find({"_id": server_id})[0]["port"]
-        return self.investigate_by_ip(ip, port, update_db, data)
+        return self._investigate_by_ip(ip, port, update_db, data)
 
     def investigate_all(self, update_db=True, data: ServerData = None, celery=False):
         if celery:
@@ -71,10 +73,10 @@ class ServerReconnaissance:
             pass  # send task to celery
         else:
             for server in self.db.find({}):
-                results.append(self.investigate_by_ip(server["ip"], server["port"], update_db, data))
+                results.append(self._investigate_by_ip(server["ip"], server["port"], update_db, data))
         return results
 
-    def investigate_by_ip(self, server_ip, server_port=25565, update_db=False, data: ServerData = None):
+    def _investigate_by_ip(self, server_ip, server_port=25565, update_db=False, data: ServerData = None):
         if data is None:
             data = standard_data
         if update_db and self.db is None:
